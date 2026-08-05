@@ -1,0 +1,94 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    ports: [ "3000:3000" ]
+    volumes:
+      - ./config/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    ports: [ "3001:3001" ]
+    volumes: [ "./config/uptime-kuma:/app/data" ]
+    restart: unless-stopped
+
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    ports: [ "8082:80" ]
+    volumes: [ "./config/vaultwarden:/data" ]
+    restart: unless-stopped
+
+#  pihole:
+#    image: pihole/pihole:latest
+#    container_name: pihole
+#    ports:
+#      - "53:53/tcp"
+#      - "53:53/udp"
+#      - "80:80/tcp"
+#    environment:
+#      TZ: 'UTC'
+#      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
+#    volumes: [ "./config/pihole:/etc/pihole" ]
+#    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      WEBUI_PORT: "8080"
+    volumes:
+      - ./config/qbittorrent:/config
+      - /mnt/storage:/data
+    restart: unless-stopped
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    ports: [ "8096:8096" ]
+    devices: ["/dev/dri:/dev/dri" ] # Intel QuickSync hardware transcoding
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+    volumes:
+      - ./config/jellyfin:/config
+      - /mnt/supernova/media:/data/media
+    restart: unless-stopped
+
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    container_name: telegram-bot-api
+    restart: unless-stopped
+    environment:
+      TELEGRAM_API_ID: ${API_ID}
+      TELEGRAM_API_HASH: ${API_HASH}
+      TELEGRAM_LOCAL: "true"
+    volumes:
+      - ./config/telegram-bot-api:/var/lib/telegram-bot-api
+
+  jellyfin-bot:
+    build: ./telegram-bot
+    container_name: jellyfin-telegram-bot
+    restart: unless-stopped
+    depends_on:
+      - telegram-bot-api
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      LOCAL_API_URL: http://telegram-bot-api:8081
+      ALLOWED_USER_IDS: ${ALLOWED_USER_IDS}
+      DOWNLOAD_DIR: /downloads
+      JELLYFIN_URL: http://jellyfin:8096
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY}
+    volumes:
+      - ./config/telegram-bot-api:/var/lib/telegram-bot-api
+      - /mnt/supernova/media:/downloads
+

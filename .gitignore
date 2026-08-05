@@ -1,0 +1,36 @@
+# =========================================================
+# SECRETS — never commit real credentials
+# =========================================================
+.env
+*.env
+!.env.example
+
+# =========================================================
+# Runtime app data — databases, tokens, session files that
+# containers generate on first run. Backed up separately,
+# not via git (see note in README).
+# =========================================================
+config/
+
+# =========================================================
+# Telegram session files (only relevant if you ever add a
+# userbot alongside the bot — these are as sensitive as a
+# password, must never be committed)
+# =========================================================
+*.session
+*.session-journal
+
+# =========================================================
+# Python
+# =========================================================
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# =========================================================
+# Docker / logs
+# =========================================================
+*.log
+docker-compose.override.yml
