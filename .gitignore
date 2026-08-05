@@ -4,6 +4,7 @@
 .env
 *.env
 !.env.example
+/telegram-bot/.env.sample
 
 # =========================================================
 # Runtime app data — databases, tokens, session files that
