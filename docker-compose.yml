@@ -116,35 +116,47 @@ services:
       - /storage/media:/data/media
     restart: unless-stopped
 
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    container_name: stirling-pdf
+    ports: [ "8083:8080" ]
+    environment:
+      DOCKER_ENABLE-SECURITY: "false"
+      LANGS: en_GB
+    volumes:
+      - ./config/stirling-pdf/tessdata:/usr/share/tessdata
+      - ./config/stirling-pdf/configs:/configs
+    restart: unless-stopped
+
 # ---------------------------------------------------------------
 # Telegram bot: disabled for now. To enable later, uncomment both
 # services below, fill in the Telegram values in .env, and run
 # `docker compose up -d --build`.
 # ---------------------------------------------------------------
-#  telegram-bot-api:
-#    image: aiogram/telegram-bot-api:latest
-#    container_name: telegram-bot-api
-#    restart: unless-stopped
-#    environment:
-#      TELEGRAM_API_ID: ${API_ID}
-#      TELEGRAM_API_HASH: ${API_HASH}
-#      TELEGRAM_LOCAL: "true"
-#    volumes:
-#      - ./config/telegram-bot-api:/var/lib/telegram-bot-api
-#
-#  jellyfin-bot:
-#    build: ./telegram-bot
-#    container_name: jellyfin-telegram-bot
-#    restart: unless-stopped
-#    depends_on:
-#      - telegram-bot-api
-#    environment:
-#      BOT_TOKEN: ${BOT_TOKEN}
-#      LOCAL_API_URL: http://telegram-bot-api:8081
-#      ALLOWED_USER_IDS: ${ALLOWED_USER_IDS}
-#      DOWNLOAD_DIR: /downloads
-#      JELLYFIN_URL: http://jellyfin:8096
-#      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY}
-#    volumes:
-#      - ./config/telegram-bot-api:/var/lib/telegram-bot-api
-#      - /storage/media/movies:/downloads
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    container_name: telegram-bot-api
+    restart: unless-stopped
+    environment:
+      TELEGRAM_API_ID: ${API_ID}
+      TELEGRAM_API_HASH: ${API_HASH}
+      TELEGRAM_LOCAL: "true"
+    volumes:
+      - ./config/telegram-bot-api:/var/lib/telegram-bot-api
+
+  jellyfin-bot:
+    build: ./telegram-bot
+    container_name: jellyfin-telegram-bot
+    restart: unless-stopped
+    depends_on:
+      - telegram-bot-api
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      LOCAL_API_URL: http://telegram-bot-api:8081
+      ALLOWED_USER_IDS: ${ALLOWED_USER_IDS}
+      DOWNLOAD_DIR: /downloads
+      JELLYFIN_URL: http://jellyfin:8096
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY}
+    volumes:
+      - ./config/telegram-bot-api:/var/lib/telegram-bot-api
+      - /storage/media/movies:/downloads
