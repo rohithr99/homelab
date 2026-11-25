@@ -173,3 +173,30 @@ services:
     volumes:
       - ./config/telegram-bot-api:/var/lib/telegram-bot-api
       - /storage/media/movies:/downloads
+
+  access-bot:
+    build: ./access-bot
+    container_name: access-bot
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: ${ACCESS_BOT_TOKEN}
+      ADMIN_IDS: ${ADMIN_IDS}
+      DB_PATH: /shared/users.db
+    volumes:
+      - ./config/shared:/shared
+
+  ytdl-bot:
+    build: ./ytdl-bot
+    container_name: ytdl-bot
+    restart: unless-stopped
+    depends_on:
+      - telegram-bot-api
+    environment:
+      BOT_TOKEN: ${YTDL_BOT_TOKEN}
+      LOCAL_API_URL: http://telegram-bot-api:8081
+      ADMIN_IDS: ${ADMIN_IDS}
+      ACCESS_BOT: ${ACCESS_BOT_NAME}
+      DB_PATH: /shared/users.db
+      MAX_PLAYLIST: "25"
+    volumes:
+      - ./config/shared:/shared
